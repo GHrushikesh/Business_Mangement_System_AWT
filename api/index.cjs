@@ -17,38 +17,17 @@ if (MONGODB_URI) {
     .catch((err) => console.log('❌ MongoDB connection error: ', err));
 }
 
-// Models (Imported from the local api/models folder)
-const RepairTicket = require('./models/RepairTicket');
-const Customer = require('./models/Customer');
-const Product = require('./models/Product');
-const RepairIssue = require('./models/RepairIssue');
+// Models (Note the .cjs extensions!)
+const RepairTicket = require('./models/RepairTicket.cjs');
+const Customer = require('./models/Customer.cjs');
+const Product = require('./models/Product.cjs');
+const RepairIssue = require('./models/RepairIssue.cjs');
 
 // Health Check
-app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'Backend is running!' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'Backend is running (CJS Mode)!' }));
 
 // ======================= ROUTES =======================
 
-// Ticket Routes
-app.get('/api/tickets', async (req, res) => {
-  try {
-    const tickets = await RepairTicket.find().sort({ createdAt: -1 });
-    res.json(tickets);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/tickets', async (req, res) => {
-  try {
-    const newTicket = new RepairTicket(req.body);
-    const savedTicket = await newTicket.save();
-    res.status(201).json(savedTicket);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// Customer Routes
 app.get('/api/customers', async (req, res) => {
   try {
     const customers = await Customer.find().sort({ createdAt: -1 });
@@ -68,7 +47,25 @@ app.post('/api/customers', async (req, res) => {
   }
 });
 
-// Product Routes
+app.get('/api/tickets', async (req, res) => {
+  try {
+    const tickets = await RepairTicket.find().sort({ createdAt: -1 });
+    res.json(tickets);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/tickets', async (req, res) => {
+  try {
+    const newTicket = new RepairTicket(req.body);
+    const savedTicket = await newTicket.save();
+    res.status(201).json(savedTicket);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 app.get('/api/products', async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
@@ -88,7 +85,6 @@ app.post('/api/products', async (req, res) => {
   }
 });
 
-// Repair Issues
 app.get('/api/issues', async (req, res) => {
   try {
     const issues = await RepairIssue.find().sort({ createdAt: -1 });
@@ -98,7 +94,6 @@ app.get('/api/issues', async (req, res) => {
   }
 });
 
-// Specific route for tracking
 app.get('/api/tickets/track/:ticketNo', async (req, res) => {
   try {
     const { ticketNo } = req.params;
@@ -112,7 +107,6 @@ app.get('/api/tickets/track/:ticketNo', async (req, res) => {
   }
 });
 
-// Delete routes
 app.delete('/api/customers/:id', async (req, res) => {
   await Customer.findByIdAndDelete(req.params.id);
   res.json({ message: 'Deleted' });
